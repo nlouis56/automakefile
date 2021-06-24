@@ -1,0 +1,34 @@
+#!/usr/bin/bash
+
+function makefile_init
+{
+    if [ -r Makefile ]
+    then
+        rm -f Makefile
+        touch Makefile
+    else
+        touch Makefile
+    fi
+    echo "##
+## EPITECH PROJECT
+## automakefile generated this
+## File description:
+## Makefile
+##" > Makefile
+}
+
+if [ -z $1 ]
+then
+    printf "please enter a configuration file name\n"
+    exit
+else
+    if [ -r $1 ]
+    then
+        makefile_init
+    else
+        printf "no valid configuration file\n"
+        exit
+    fi
+fi
+
+echo "test end of program" >> Makefile
