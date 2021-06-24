@@ -1,5 +1,10 @@
 #!/usr/bin/bash
 
+if [ -z $1 ]
+then
+    exit 84
+fi
+
 flag=${1}
 flag_len=${#flag}
 
