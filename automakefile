@@ -11,9 +11,9 @@ function makefile_init
     fi
     echo "##
 ## EPITECH PROJECT
-## automakefile generated this
+## $(pwd)
 ## File description:
-## Makefile
+## Makefile (automatic generation)
 ##" > Makefile
 }
 
