@@ -13,6 +13,6 @@ while read b c d e f g h i j
 do
     if [ $flag == $(echo "$j" | cut -b -${flag_len} -) ]
     then
-        printf "%s$d %s$j\n"
+        printf "%s\t%s\n" "$d" "$j"
     fi
 done
