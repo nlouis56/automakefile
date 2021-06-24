@@ -19,14 +19,18 @@ function makefile_init
 
 if [ -z $1 ]
 then
-    printf "please enter a configuration file name\n"
+    echo "please enter a configuration file name"
     exit
 else
-    if [ -r $1 ]
+    if [ -r $1 ] && [ -z $2 ]
     then
         makefile_init
+    elif [ -z $2 ]
+    then
+        echo "no valid configuration file"
+        exit
     else
-        printf "no valid configuration file\n"
+        echo "this script only takes one argument"
         exit
     fi
 fi
