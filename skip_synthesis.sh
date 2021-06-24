@@ -1,6 +1,13 @@
 #!/usr/bin/bash
 
-while read a b c d e f g h i
+flag=${1}
+flag_len=${#flag}
+
+read a
+while read b c d e f g h i j
 do
-    printf "%s %s\n" $d $i | grep "$1"
+    if [ $flag == $(echo "$j" | cut -b -${flag_len} -) ]
+    then
+        printf "%s$d %s$j\n"
+    fi
 done
