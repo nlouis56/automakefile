@@ -153,9 +153,23 @@ else
     then
         configuration_file=$1
         flags_init
-        makefile_init
-        fill_makefile
-        fill_rules
+        if [ -z $project_dir ]
+        then
+            echo "no project directory, aborting"
+            exit 84
+        elif [ -z ${src[0]} ]
+        then
+            echo "no source files, aborting"
+            exit 84
+        else
+            if [ -z $bin_name ]
+            then
+                bin_name="a.out"
+            fi
+            makefile_init
+            fill_makefile
+            fill_rules
+        fi
     elif [ -z $2 ]
     then
         echo "no valid configuration file"
@@ -165,3 +179,4 @@ else
         exit 84
     fi
 fi
+exit 0
