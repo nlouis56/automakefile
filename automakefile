@@ -190,9 +190,24 @@ function fill_rules
         echo "	\$(DECOMP_BIN) \$(DECOMP_FLAGS) ${backup}/${bin_name}_backup.tar" >> ${project_dir}/Makefile
         echo >> ${project_dir}/Makefile
         echo >> ${project_dir}/Makefile
+        echo "num:" >> ${project_dir}/Makefile
+        echo "	@cat .version" >> ${project_dir}/Makefile
+        echo >> ${project_dir}/Makefile
+        echo >> ${project_dir}/Makefile
         echo ".PHONY: all clean fclean re archive revert num delete" >> ${project_dir}/Makefile
     else
         echo ".PHONY: all clean fclean re" >> ${project_dir}/Makefile
+    fi
+}
+
+function create_version_file
+{
+    if [ -f ${project_dir}/.version ]
+    then
+        cat ${project_dir}/.version | read proj_version
+    else
+        proj_version="v1.0"
+        echo "$proj_version" > ${project_dir}/.version
     fi
 }
 
@@ -277,6 +292,7 @@ else
                 comp="gcc"
             fi
             makefile_init
+            create_version_file
             fill_makefile
             fill_rules
         fi
