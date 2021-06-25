@@ -134,24 +134,29 @@ function fill_makefile
     echo >> ${project_dir}/Makefile
     echo "CC	=	$comp" >> ${project_dir}/Makefile
     echo >> ${project_dir}/Makefile
-    if [ -d ${project_dir}/${backup} ]
+    if [ -z $backup ] ||  [ -z $comp_bin ] ||  [ -z $comp_flags ] ||  [ -z $decomp_bin ] ||  [ -z $decomp_flags ]
     then
-        echo "BACKUP	=	$backup/" >> ${project_dir}/Makefile
-        echo >> ${project_dir}/Makefile
-        echo -n "COMP_SRC	=	" >> ${project_dir}/Makefile
-        get_backup_src
-        echo >> ${project_dir}/Makefile
-        echo "COMP_BIN	=	$comp_bin" >> ${project_dir}/Makefile
-        echo >> ${project_dir}/Makefile
-        echo "COMP_FLAGS	=	$comp_flags" >> ${project_dir}/Makefile
-        echo >> ${project_dir}/Makefile
-        echo "DECOMP_BIN	=	$decomp_bin" >> ${project_dir}/Makefile
-        echo >> ${project_dir}/Makefile
-        echo "DECOMP_FLAGS	=	$decomp_flags" >> ${project_dir}/Makefile
-        echo >> ${project_dir}/Makefile
-        BACKUP_PRES="OK"
-    else
         BACKUP_PRES="KO"
+    else
+        if [ -d ${project_dir}/${backup} ]
+        then
+            echo "BACKUP	=	$backup/" >> ${project_dir}/Makefile
+            echo >> ${project_dir}/Makefile
+            echo -n "COMP_SRC	=	" >> ${project_dir}/Makefile
+            get_backup_src
+            echo >> ${project_dir}/Makefile
+            echo "COMP_BIN	=	$comp_bin" >> ${project_dir}/Makefile
+            echo >> ${project_dir}/Makefile
+            echo "COMP_FLAGS	=	$comp_flags" >> ${project_dir}/Makefile
+            echo >> ${project_dir}/Makefile
+            echo "DECOMP_BIN	=	$decomp_bin" >> ${project_dir}/Makefile
+            echo >> ${project_dir}/Makefile
+            echo "DECOMP_FLAGS	=	$decomp_flags" >> ${project_dir}/Makefile
+            echo >> ${project_dir}/Makefile
+            BACKUP_PRES="OK"
+        else
+            BACKUP_PRES="KO"
+        fi
     fi
 }
 
@@ -228,25 +233,40 @@ function insert_the_cow
 
 }
 
+function automakefile_ascii_art
+{
+    echo "##┌────────────────────────────────────────────────────────────────────────────────────┐##
+##│                                                                                    │##
+##│                 m                         #               m\"\"    \"    \"\"#          │##
+##│  mmm   m   m  mm#mm   mmm   mmmmm   mmm   #   m   mmm   mm#mm  mmm      #     mmm  │##
+##│ \"   #  #   #    #    #\" \"#  # # #  \"   #  # m\"   #\"  #    #      #      #    #\"  # │##
+##│ m\"\"\"#  #   #    #    #   #  # # #  m\"\"\"#  #\"#    #\"\"\"\"    #      #      #    #\"\"\"\" │##
+##│ \"mm\"#  \"mm\"#    \"mm  \"#m#\"  # # #  \"mm\"#  #  \"m  \"#mm\"    #    mm#mm    \"mm  \"#mm\" │##
+##│                                                                                    │##
+##│                                                                                    │##
+##└────────────────────────────────────────────────────────────────────────────────────┘##
+" >> ${project_dir}/Makefile
+}
+
 function help_message
 {
 
-    echo "┌────────────────────────────────────────────────────────────────────────────────────┐
-│                                                                                    │
-│                 m                         #               m\"\"    \"    \"\"#          │
-│  mmm   m   m  mm#mm   mmm   mmmmm   mmm   #   m   mmm   mm#mm  mmm      #     mmm  │
-│ \"   #  #   #    #    #\" \"#  # # #  \"   #  # m\"   #\"  #    #      #      #    #\"  # │
-│ m\"\"\"#  #   #    #    #   #  # # #  m\"\"\"#  #\"#    #\"\"\"\"    #      #      #    #\"\"\"\" │
-│ \"mm\"#  \"mm\"#    \"mm  \"#m#\"  # # #  \"mm\"#  #  \"m  \"#mm\"    #    mm#mm    \"mm  \"#mm\" │
-│                                                                                    │
-│                                                                                    │
-└────────────────────────────────────────────────────────────────────────────────────┘
+    echo "##┌────────────────────────────────────────────────────────────────────────────────────┐##
+##│                                                                                    │##
+##│                 m                         #               m\"\"    \"    \"\"#          │##
+##│  mmm   m   m  mm#mm   mmm   mmmmm   mmm   #   m   mmm   mm#mm  mmm      #     mmm  │##
+##│ \"   #  #   #    #    #\" \"#  # # #  \"   #  # m\"   #\"  #    #      #      #    #\"  # │##
+##│ m\"\"\"#  #   #    #    #   #  # # #  m\"\"\"#  #\"#    #\"\"\"\"    #      #      #    #\"\"\"\" │##
+##│ \"mm\"#  \"mm\"#    \"mm  \"#m#\"  # # #  \"mm\"#  #  \"m  \"#mm\"    #    mm#mm    \"mm  \"#mm\" │##
+##│                                                                                    │##
+##│                                                                                    │##
+##└────────────────────────────────────────────────────────────────────────────────────┘##
 "
     echo
     echo "USAGE :
     ./automakefile [conf_file]
 
-	The configuration file is used to build the makefile, it should be built like this :"
+	The configuration file is used to build the makefile, it should be organized like this :"
     echo
     echo "	• source_filename;dependence1 dependence2...
 	(specify the full names of the files, from the header subfolder below)
@@ -257,7 +277,12 @@ function help_message
 	• EXEC;executable_name
 	• CC;compilator_binary
 	• CFLAGS;compilation_flag1 compilation_flag1...
-	• LDFLAGS;linking_flag1 linking_flag2..."
+	• LDFLAGS;linking_flag1 linking_flag2...
+	• BCK_DIR;name_of_the_backup_folder
+	• ZIP;compression_binary
+	• ZIPFLAGS;compression_options
+	• UNZIP;decompression_binary
+	• UNZIPFLAGS;decompression_options"
     echo
     echo "	The source file names and the project directory are mandatory,
 	the program will exit with an error message if not present"
@@ -265,6 +290,7 @@ function help_message
     echo "	If not specified otherwise, the default compiler is gcc"
     echo "	The default binary name is a.out, unless specified otherwise"
     echo
+    echo "	The archiving rules will not be created if one compression parameter is missing (bck_dir, zip, unzipflags, etc...)"
     echo
     echo "	-h can be used to see this message"
 }
@@ -318,4 +344,5 @@ fi
 echo >> ${project_dir}/Makefile
 echo >> ${project_dir}/Makefile
 insert_the_cow
+automakefile_ascii_art
 exit 0
