@@ -87,7 +87,7 @@ function makefile_init
 
 function get_backup_src
 {
-    raw_ls_output=$(ls -a ${project_dir} -I ${backup} -I '.*')
+    raw_ls_output=$(ls -a ${project_dir} -I ${backup})
     parsed_ls="$(echo "$raw_ls_output" | tr -s '\n' " ")"
     echo "$parsed_ls" >> ${project_dir}/Makefile
 }
@@ -191,7 +191,7 @@ function fill_rules
         echo >> ${project_dir}/Makefile
         echo >> ${project_dir}/Makefile
         echo "revert:" >> ${project_dir}/Makefile
-        echo "	ls -a -I '${backup}' -I 'Makefile' -I '.' -I '..' -I '.*' | xargs rm -rf" >> ${project_dir}/Makefile
+        echo "	ls -a -I '${backup}' -I 'Makefile' -I '.' -I '..'| xargs rm -rf" >> ${project_dir}/Makefile
         echo "	\$(DECOMP_BIN) \$(DECOMP_FLAGS) ${backup}/${bin_name}_backup.tar" >> ${project_dir}/Makefile
         echo >> ${project_dir}/Makefile
         echo >> ${project_dir}/Makefile
