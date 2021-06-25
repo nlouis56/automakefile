@@ -2,3 +2,4 @@ fakeProj1.tgz
 config
 test.sh
 Makefile
+fakeProj1/.version
