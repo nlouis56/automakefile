@@ -12,50 +12,52 @@ function flags_init
     i=0
     while read line
     do
-        array=($line)
-        if [ ${array[0]} == "SOURCES_DIR" ]
+        parsed_line=($line)
+        if [ ${parsed_line[0]} == "PROJECT_DIR" ]
         then
-            src_dir=${array[1]}
-        elif [ ${array[0]} == "PROJECT_DIR" ]
+            project_dir=${parsed_line[1]}
+        elif [ ${parsed_line[0]} == "SOURCES_DIR" ]
         then
-            project_dir=${array[1]}
-        elif [ ${array[0]} == "HEADERS_DIR" ]
+            src_dir=${parsed_line[1]}
+        elif [ ${parsed_line[0]} == "HEADERS_DIR" ]
         then
-            include_dir=${array[1]}
-        elif [ ${array[0]} == "LIBS_DIR" ]
+            include_dir=${parsed_line[1]}
+        elif [ ${parsed_line[0]} == "LIBS_DIR" ]
         then
-            lib_dir=${array[1]}
-        elif [ ${array[0]} == "EXEC" ]
+            lib_dir=${parsed_line[1]}
+        elif [ ${parsed_line[0]} == "EXEC" ]
         then
-            bin_name=${array[1]}
-        elif [ ${array[0]} == "CC" ]
+            bin_name=${parsed_line[1]}
+        elif [ ${parsed_line[0]} == "CC" ]
         then
-            comp=${array[1]}
-        elif [ ${array[0]} == "CFLAGS" ]
+            comp=${parsed_line[1]}
+        elif [ ${parsed_line[0]} == "CFLAGS" ]
         then
-            c_flags=${array[1]}
-        elif [ ${array[0]} == "LDFLAGS" ]
+            c_flags=${parsed_line[1]}
+        elif [ ${parsed_line[0]} == "LDFLAGS" ]
         then
-            link_flags=${array[1]}
-        elif [ ${array[0]} == "BCK_DIR" ]
+            link_flags=${parsed_line[1]}
+        elif [ ${parsed_line[0]} == "BCK_DIR" ]
         then
-            backup=${array[1]}
-        elif [ ${array[0]} == "ZIP" ]
+            backup=${parsed_line[1]}
+        elif [ ${parsed_line[0]} == "ZIP" ]
         then
-            comp_bin=${array[1]}
-        elif [ ${array[0]} == "ZIPFLAGS" ]
+            comp_bin=${parsed_line[1]}
+        elif [ ${parsed_line[0]} == "ZIPFLAGS" ]
         then
-            comp_flags=${array[1]}
-        elif [ ${array[0]} == "UNZIP" ]
+            comp_flags=${parsed_line[1]}
+        elif [ ${parsed_line[0]} == "UNZIP" ]
         then
-            decomp_bin=${array[1]}
-        elif [ ${array[0]} == "UNZIPFLAGS" ]
+            decomp_bin=${parsed_line[1]}
+        elif [ ${parsed_line[0]} == "UNZIPFLAGS" ]
         then
-            decomp_flags=${array[1]}
-        elif [ "c" == $(echo "${array[0]}" | cut -d "." -s -f 2) ]
+            decomp_flags=${parsed_line[1]}
+        elif [[ "c" == $(echo "${parsed_line[0]}" | cut -d "." -s -f 2) ]]
         then
-            src[i]=${array[0]}
+            src[i]=${parsed_line[0]}
             ((i++))
+        else
+            echo "unknown flag in the config file"
         fi
     done < $configuration_file
 }
@@ -157,6 +159,47 @@ function insert_the_cow
 
 }
 
+function help_message
+{
+
+    echo "┌────────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                    │
+│                 m                         #               m\"\"    \"    \"\"#          │
+│  mmm   m   m  mm#mm   mmm   mmmmm   mmm   #   m   mmm   mm#mm  mmm      #     mmm  │
+│ \"   #  #   #    #    #\" \"#  # # #  \"   #  # m\"   #\"  #    #      #      #    #\"  # │
+│ m\"\"\"#  #   #    #    #   #  # # #  m\"\"\"#  #\"#    #\"\"\"\"    #      #      #    #\"\"\"\" │
+│ \"mm\"#  \"mm\"#    \"mm  \"#m#\"  # # #  \"mm\"#  #  \"m  \"#mm\"    #    mm#mm    \"mm  \"#mm\" │
+│                                                                                    │
+│                                                                                    │
+└────────────────────────────────────────────────────────────────────────────────────┘
+"
+    echo
+    echo "USAGE :
+    ./automakefile [conf_file]
+
+	The configuration file is used to build the makefile, it should be built like this :"
+    echo
+    echo "	• source_filename;dependence1 dependence2...
+	(specify the full names of the files, from the header subfolder below)
+	• PROJECT_DIR;name_of_the_project_root_folder
+	• SOURCES_DIR;subfolder_containing_the_source_files
+	• HEADERS_DIR;subfolder_containing_the_header_files
+	• LIBS_DIR;subfolder_containing_librairies
+	• EXEC;executable_name
+	• CC;compilator_binary
+	• CFLAGS;compilation_flag1 compilation_flag1...
+	• LDFLAGS;linking_flag1 linking_flag2..."
+    echo
+    echo "	The source file names and the project directory are mandatory,
+	the program will exit with an error message if not present"
+    echo
+    echo "	If not specified otherwise, the default compiler is gcc"
+    echo "	The default binary name is a.out, unless specified otherwise"
+    echo
+    echo
+    echo "	-h can be used to see this message"
+}
+
 if [ -z $1 ]
 then
     echo "please enter a configuration file name"
@@ -179,14 +222,24 @@ else
             then
                 bin_name="a.out"
             fi
+            if [ -z $comp ]
+            then
+                comp="gcc"
+            fi
             makefile_init
             fill_makefile
             fill_rules
         fi
     elif [ -z $2 ]
     then
-        echo "no valid configuration file"
-        exit 84
+        if [ $1 == "-h" ]
+        then
+            help_message
+            exit 0
+        else
+            echo "no valid configuration file"
+            exit 84
+        fi
     else
         echo "this script only takes one argument"
         exit 84
