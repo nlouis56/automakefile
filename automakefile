@@ -6,60 +6,66 @@
 ## Synthesis pt. 2, automakefile
 ##
 
+function flags_catcher
+{
+    parsed_line=($line)
+    if [ ${parsed_line[0]} == "PROJECT_DIR" ]
+    then
+        project_dir=${parsed_line[1]}
+    elif [ ${parsed_line[0]} == "SOURCES_DIR" ]
+    then
+        src_dir=${parsed_line[1]}
+    elif [ ${parsed_line[0]} == "HEADERS_DIR" ]
+    then
+        include_dir=${parsed_line[1]}
+    elif [ ${parsed_line[0]} == "LIBS_DIR" ]
+    then
+        lib_dir=${parsed_line[1]}
+    elif [ ${parsed_line[0]} == "EXEC" ]
+    then
+        bin_name=${parsed_line[1]}
+    elif [ ${parsed_line[0]} == "CC" ]
+    then
+        comp=${parsed_line[1]}
+    elif [ ${parsed_line[0]} == "CFLAGS" ]
+    then
+        c_flags=${parsed_line[1]}
+    elif [ ${parsed_line[0]} == "LDFLAGS" ]
+    then
+        link_flags=${parsed_line[1]}
+    elif [ ${parsed_line[0]} == "BCK_DIR" ]
+    then
+        backup=${parsed_line[1]}
+    elif [ ${parsed_line[0]} == "ZIP" ]
+    then
+        comp_bin=${parsed_line[1]}
+    elif [ ${parsed_line[0]} == "ZIPFLAGS" ]
+    then
+        comp_flags=${parsed_line[1]}
+    elif [ ${parsed_line[0]} == "UNZIP" ]
+    then
+        decomp_bin=${parsed_line[1]}
+    elif [ ${parsed_line[0]} == "UNZIPFLAGS" ]
+    then
+        decomp_flags=${parsed_line[1]}
+    elif [[ "c" == $(echo "${parsed_line[0]}" | cut -d "." -s -f 2) ]]
+    then
+        src[i]=${parsed_line[0]}
+        ((i++))
+    else
+        echo "unknown flag in the config file"
+    fi
+}
+
 function flags_init
 {
     IFS=";"
     i=0
     while read line
     do
-        parsed_line=($line)
-        if [ ${parsed_line[0]} == "PROJECT_DIR" ]
-        then
-            project_dir=${parsed_line[1]}
-        elif [ ${parsed_line[0]} == "SOURCES_DIR" ]
-        then
-            src_dir=${parsed_line[1]}
-        elif [ ${parsed_line[0]} == "HEADERS_DIR" ]
-        then
-            include_dir=${parsed_line[1]}
-        elif [ ${parsed_line[0]} == "LIBS_DIR" ]
-        then
-            lib_dir=${parsed_line[1]}
-        elif [ ${parsed_line[0]} == "EXEC" ]
-        then
-            bin_name=${parsed_line[1]}
-        elif [ ${parsed_line[0]} == "CC" ]
-        then
-            comp=${parsed_line[1]}
-        elif [ ${parsed_line[0]} == "CFLAGS" ]
-        then
-            c_flags=${parsed_line[1]}
-        elif [ ${parsed_line[0]} == "LDFLAGS" ]
-        then
-            link_flags=${parsed_line[1]}
-        elif [ ${parsed_line[0]} == "BCK_DIR" ]
-        then
-            backup=${parsed_line[1]}
-        elif [ ${parsed_line[0]} == "ZIP" ]
-        then
-            comp_bin=${parsed_line[1]}
-        elif [ ${parsed_line[0]} == "ZIPFLAGS" ]
-        then
-            comp_flags=${parsed_line[1]}
-        elif [ ${parsed_line[0]} == "UNZIP" ]
-        then
-            decomp_bin=${parsed_line[1]}
-        elif [ ${parsed_line[0]} == "UNZIPFLAGS" ]
-        then
-            decomp_flags=${parsed_line[1]}
-        elif [[ "c" == $(echo "${parsed_line[0]}" | cut -d "." -s -f 2) ]]
-        then
-            src[i]=${parsed_line[0]}
-            ((i++))
-        else
-            echo "unknown flag in the config file"
-        fi
+        flags_catcher
     done < $configuration_file
+    flags_catcher
 }
 
 function makefile_init
@@ -77,6 +83,13 @@ function makefile_init
 ## File description:
 ## Makefile (automatic generation)
 ##" > $project_dir/Makefile
+}
+
+function get_backup_src
+{
+    raw_ls_output=$(ls -a ${project_dir} -I ${backup} -I '.*')
+    parsed_ls="$(echo "$raw_ls_output" | tr -s '\n' " ")"
+    echo "$parsed_ls" >> ${project_dir}/Makefile
 }
 
 function fill_makefile
@@ -121,6 +134,25 @@ function fill_makefile
     echo >> ${project_dir}/Makefile
     echo "CC	=	$comp" >> ${project_dir}/Makefile
     echo >> ${project_dir}/Makefile
+    if [ -d ${project_dir}/${backup} ]
+    then
+        echo "BACKUP	=	$backup/" >> ${project_dir}/Makefile
+        echo >> ${project_dir}/Makefile
+        echo -n "COMP_SRC	=	" >> ${project_dir}/Makefile
+        get_backup_src
+        echo >> ${project_dir}/Makefile
+        echo "COMP_BIN	=	$comp_bin" >> ${project_dir}/Makefile
+        echo >> ${project_dir}/Makefile
+        echo "COMP_FLAGS	=	$comp_flags" >> ${project_dir}/Makefile
+        echo >> ${project_dir}/Makefile
+        echo "DECOMP_BIN	=	$decomp_bin" >> ${project_dir}/Makefile
+        echo >> ${project_dir}/Makefile
+        echo "DECOMP_FLAGS	=	$decomp_flags" >> ${project_dir}/Makefile
+        echo >> ${project_dir}/Makefile
+        BACKUP_PRES="OK"
+    else
+        BACKUP_PRES="KO"
+    fi
 }
 
 function fill_rules
@@ -143,7 +175,25 @@ function fill_rules
     echo "re:	fclean all" >> ${project_dir}/Makefile
     echo >> ${project_dir}/Makefile
     echo >> ${project_dir}/Makefile
-    echo ".PHONY: all clean fclean re" >> ${project_dir}/Makefile
+    if [ $BACKUP_PRES == "OK" ]
+    then
+        echo "delete:" >> ${project_dir}/Makefile
+        echo "	rm -f ${backup}/${bin_name}_backup.tar" >> ${project_dir}/Makefile
+        echo >> ${project_dir}/Makefile
+        echo >> ${project_dir}/Makefile
+        echo "archive: delete" >> ${project_dir}/Makefile
+        echo "	ls -a -I ${backup} -I '.*' | xargs \$(COMP_BIN) \$(COMP_FLAGS) ${backup}/${bin_name}_backup.tar && echo \"${backup}/${bin_name}_backup.tar generated.\"">> ${project_dir}/Makefile
+        echo >> ${project_dir}/Makefile
+        echo >> ${project_dir}/Makefile
+        echo "revert:" >> ${project_dir}/Makefile
+        echo "	ls -a -I '${backup}' -I 'Makefile' -I '.' -I '..' -I '.*' | xargs rm -rf" >> ${project_dir}/Makefile
+        echo "	\$(DECOMP_BIN) \$(DECOMP_FLAGS) ${backup}/${bin_name}_backup.tar" >> ${project_dir}/Makefile
+        echo >> ${project_dir}/Makefile
+        echo >> ${project_dir}/Makefile
+        echo ".PHONY: all clean fclean re archive revert num delete" >> ${project_dir}/Makefile
+    else
+        echo ".PHONY: all clean fclean re" >> ${project_dir}/Makefile
+    fi
 }
 
 function insert_the_cow
