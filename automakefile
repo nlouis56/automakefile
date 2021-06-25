@@ -164,7 +164,12 @@ function fill_rules
 {
     echo >> ${project_dir}/Makefile
     echo "all:" >> ${project_dir}/Makefile
-    echo "	\$(CC) \$(SRC) -o \$(NAME) \$(CFLAGS) -I \$(I_DIR) \$(LDFLAGS)" >> ${project_dir}/Makefile
+    if [[ $comp_line == "KO" ]]
+    then
+        echo "	@echo \"not enough arguments were supplied to create a compiling expression\"" >> ${project_dir}/Makefile
+    else
+        echo "	\$(CC) \$(SRC) -o \$(NAME) \$(CFLAGS) -I \$(I_DIR) \$(LDFLAGS)" >> ${project_dir}/Makefile
+    fi
     echo >> ${project_dir}/Makefile
     echo >> ${project_dir}/Makefile
     echo "clean:" >> ${project_dir}/Makefile
@@ -287,7 +292,8 @@ function help_message
     echo "	The source file names and the project directory are mandatory,
 	the program will exit with an error message if not present"
     echo
-    echo "	If not specified otherwise, the default compiler is gcc"
+    echo "	If the compiler or the compilation flags are not supplied the program will not create a compilation expression,
+	but the Makefile will be created anyways"
     echo "	The default binary name is a.out, unless specified otherwise"
     echo
     echo "	The archiving rules will not be created if one compression parameter is missing (bck_dir, zip, unzipflags, etc...)"
@@ -316,10 +322,14 @@ else
             if [ -z $bin_name ]
             then
                 bin_name="a.out"
-            fi
-            if [ -z $comp ]
+            elif [ -z $comp ]
             then
-                comp="gcc"
+                comp_line="KO"
+                echo "no compiler in configuration file"
+            elif [ -z $c_flags ]
+            then
+                echo "no compilation flags in configuration file"
+                comp_line="KO"
             fi
             makefile_init
             create_version_file
