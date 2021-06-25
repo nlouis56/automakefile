@@ -144,6 +144,19 @@ function fill_rules
     echo ".PHONY: all clean fclean re" >> ${project_dir}/Makefile
 }
 
+function insert_the_cow
+{
+    echo "##	 ___________________________" >> ${project_dir}/Makefile
+    echo "##	< what a beautiful Makefile >" >> ${project_dir}/Makefile
+    echo "##	---------------------------" >> ${project_dir}/Makefile
+    echo "##	        \   ^__^" >> ${project_dir}/Makefile
+    echo "##	         \  (oo)\_______" >> ${project_dir}/Makefile
+    echo "##	            (__)\       )\/\\" >> ${project_dir}/Makefile
+    echo "##	                ||----w |" >> ${project_dir}/Makefile
+    echo "##	                ||     ||" >> ${project_dir}/Makefile
+
+}
+
 if [ -z $1 ]
 then
     echo "please enter a configuration file name"
@@ -179,4 +192,7 @@ else
         exit 84
     fi
 fi
+echo >> ${project_dir}/Makefile
+echo >> ${project_dir}/Makefile
+insert_the_cow
 exit 0
